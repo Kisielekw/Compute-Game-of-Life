@@ -1,0 +1,50 @@
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+RWStructuredBuffer<int> cellBuffer;
+RWStructuredBuffer<int> newCellBuffer;
+
+int width;
+int height;
+bool play;
+
+int CountNeighbours(int index)
+{
+    int count = 0;
+    count += cellBuffer[index - 1];
+    count += cellBuffer[index + 1];
+    count += cellBuffer[index + width];
+    count += cellBuffer[index + width + 1];
+    count += cellBuffer[index + width - 1];
+    count += cellBuffer[index - width];
+    count += cellBuffer[index - width + 1];
+    count += cellBuffer[index - width - 1];
+    return count;
+}
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    if (id.x < 0 || id.x > width || id.y < 0 || id.y > height)
+        return;
+    
+    int index = id.y * width + id.x;
+    
+    if (play)
+    {
+        int neighbourhood = CountNeighbours(index);
+        if (cellBuffer[index] == 1 && (neighbourhood == 2 || neighbourhood == 3))
+            newCellBuffer[index] = 1;
+        else if (cellBuffer[index] == 0 && neighbourhood == 3)
+            newCellBuffer[index] = 1;
+        else
+            newCellBuffer[index] = 0;
+    }
+    else
+        newCellBuffer[index] = cellBuffer[index];
+    
+    Result[id.xy] = newCellBuffer[index];
+}
