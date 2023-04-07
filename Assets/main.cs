@@ -61,7 +61,7 @@ public class main : MonoBehaviour
 
     private void OnGUI()
     {
-        if(GUI.Button(new Rect(20, 40, 80, 20), "Pause/Play"))
+        if(GUI.Button(new Rect(20, 40, 160, 50), "Pause/Play"))
         {
             play = !play;
         }
